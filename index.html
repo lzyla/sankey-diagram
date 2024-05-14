@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sankey Diagram</title>
+    <style>
+        .node rect {
+            fill-opacity: .9;
+            shape-rendering: crispEdges;
+        }
+        .node text {
+            text-shadow: 0 1px 0 #fff;
+        }
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .2;
+        }
+        .link:hover {
+            stroke-opacity: .5;
+        }
+    </style>
+</head>
+<body>
+    <div id="sankey-container"></div>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://d3js.org/d3-sankey.v0.12.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = {
+                "nodes": [
+                    {"name": "Poland"},
+                    {"name": "Germany"},
+                    {"name": "France"},
+                    {"name": "Italy"},
+                    {"name": "Spain"},
+                    {"name": "Netherlands"}
+                ],
+                "links": [
+                    {"source": 0, "target": 1, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 0, "target": 2, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 0, "target": 3, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 0, "target": 4, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 0, "target": 5, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 1, "target": 0, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 2, "target": 0, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 3, "target": 0, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 4, "target": 0, "value": Math.floor(Math.random() * 1000) + 500},
+                    {"source": 5, "target": 0, "value": Math.floor(Math.random() * 1000) + 500}
+                ]
+            };
+
+            const width = 800;
+            const height = 600;
+
+            const svg = d3.select("#sankey-container").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const sankey = d3.sankey()
+                .nodeWidth(15)
+                .nodePadding(10)
+                .extent([[1, 1], [width - 1, height - 6]]);
+
+            const {nodes, links} = sankey({
+                nodes: data.nodes.map(d => Object.assign({}, d)),
+                links: data.links.map(d => Object.assign({}, d))
+            });
+
+            svg.append("g")
+                .selectAll("rect")
+                .data(nodes)
+                .join("rect")
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("height", d => d.y1 - d.y0)
+                .attr("width", d => d.x1 - d.x0)
+                .attr("fill", "steelblue")
+                .attr("stroke", "#000");
+
+            svg.append("g")
+                .attr("fill", "none")
+                .attr("stroke", "#000")
+                .attr("stroke-opacity", 0.2)
+                .selectAll("path")
+                .data(links)
+                .join("path")
+                .attr("d", d3.sankeyLinkHorizontal())
+                .attr("stroke-width", d => Math.max(1, d.width));
+
+            svg.append("g")
+                .style("font", "10px sans-serif")
+                .selectAll("text")
+                .data(nodes)
+                .join("text")
+                .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr("y", d => (d.y1 + d.y0) / 2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+                .text(d => d.name);
+        });
+    </script>
+</body>
+</html>
